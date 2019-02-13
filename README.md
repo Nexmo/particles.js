@@ -1,4 +1,4 @@
-## particles.js
+## particles.js (ORIGINAL NOTES)
 
 ### A lightweight JavaScript library for creating particles.
 

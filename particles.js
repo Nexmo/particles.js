@@ -57,6 +57,7 @@ var pJS = function(tag_id, params){
       size: {
         value: 20,
         random: false,
+        size_min: 0,
         anim: {
           enable: false,
           speed: 20,
@@ -79,6 +80,7 @@ var pJS = function(tag_id, params){
         straight: false,
         out_mode: 'out',
         bounce: false,
+        max_loops: 0,
         attract: {
           enable: false,
           rotateX: 3000,
@@ -241,7 +243,7 @@ var pJS = function(tag_id, params){
   pJS.fn.particle = function(color, opacity, position){
 
     /* size */
-    this.radius = (pJS.particles.size.random ? Math.random() : 1) * pJS.particles.size.value;
+    this.radius = (pJS.particles.size.random ? Math.random() : 1) * pJS.particles.size.value + (pJS.particles.size.random ? pJS.particles.size.size_min : 0);
     if(pJS.particles.size.anim.enable){
       this.size_status = false;
       this.vs = pJS.particles.size.anim.speed / 100;
@@ -623,6 +625,7 @@ var pJS = function(tag_id, params){
 
           /* bounce particles */
           if(pJS.particles.move.bounce){
+            console.log("bouncing...");
             pJS.fn.interact.bounceParticles(p,p2);
           }
 
@@ -1183,8 +1186,16 @@ var pJS = function(tag_id, params){
 
   };
 
-
+  var prevParticle;
+  var loopsCounter = 0;
   pJS.fn.vendors.checkOverlap = function(p1, position){
+    if (pJS.particles.array.length === prevParticle) {
+      if (pJS.particles.move.max_loops !== 0) loopsCounter++;
+    } else {
+      loopsCounter = 0;
+      prevParticle = pJS.particles.array.length;
+    };
+
     for(var i = 0; i < pJS.particles.array.length; i++){
       var p2 = pJS.particles.array[i];
 
@@ -1192,7 +1203,7 @@ var pJS = function(tag_id, params){
           dy = p1.y - p2.y,
           dist = Math.sqrt(dx*dx + dy*dy);
 
-      if(dist <= p1.radius + p2.radius){
+      if(loopsCounter <= pJS.particles.move.max_loops && dist <= p1.radius*0.8 + p2.radius*0.8){
         p1.x = position ? position.x : Math.random() * pJS.canvas.w;
         p1.y = position ? position.y : Math.random() * pJS.canvas.h;
         pJS.fn.vendors.checkOverlap(p1);
@@ -1413,12 +1424,12 @@ var pJS = function(tag_id, params){
 
 /* ---------- global functions - vendors ------------ */
 
-Object.deepExtend = function(destination, source) {
+Object.deepExtend = function deepExtendFunction(destination, source) {
   for (var property in source) {
     if (source[property] && source[property].constructor &&
      source[property].constructor === Object) {
       destination[property] = destination[property] || {};
-      arguments.callee(destination[property], source[property]);
+      deepExtendFunction(destination[property], source[property]);
     } else {
       destination[property] = source[property];
     }
